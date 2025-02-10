@@ -104,9 +104,9 @@ const Paste = () => {
                         </a>
                       </button>
                       <button onClick={handleShare}
-                        className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7]  hover:bg-transparent group hover:border-red-950 cursor-pointer"> 
+                        className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7]  hover:bg-transparent group hover:border-blue-500 cursor-pointer"> 
                         <Share
-                            className="text-black group-hover:text-red-950"
+                            className="text-black group-hover:text-blue-500"
                             size={20}
                         />
                       </button>

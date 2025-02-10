@@ -1,17 +1,21 @@
+'use client'
 import { Copy, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { addToPastes, updateToPastes } from "../redux/pasteSlice";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom"; // Import useNavigate
+import Feedback from "./Feedback";
 
 const Home = () => {
   const [value, setValue] = useState("");
   const [title, setTitle] = useState("");
-  const [searchParams, setSearchParams] = useSearchParams(); // Destructure useSearchParams
-  const pasteId = searchParams.get("pasteId"); // Get pasteId from the search params
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pasteId = searchParams.get("pasteId");
   const pastes = useSelector((state) => state.paste.pastes);
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Hook for navigation
+  const [isAdmin, setIsAdmin] = useState(false); // State to track admin access
 
   const createPaste = () => {
     // Validation check
@@ -19,18 +23,15 @@ const Home = () => {
       toast.error("Please fill all the details!");
       return;
     }
-    
+
     const paste = {
       title: title,
       content: value,
-      _id:
-        pasteId ||
-        Date.now().toString(36) + Math.random().toString(36).substring(2),
+      _id: pasteId || Date.now().toString(36) + Math.random().toString(36).substring(2),
       createdAt: new Date().toISOString(),
     };
 
     if (pasteId) {
-      // If pasteId is present, update the paste
       dispatch(updateToPastes(paste));
     } else {
       dispatch(addToPastes(paste));
@@ -38,8 +39,6 @@ const Home = () => {
 
     setTitle("");
     setValue("");
-
-    // Remove the pasteId from the URL after creating/updating a paste
     setSearchParams({});
   };
 
@@ -47,7 +46,17 @@ const Home = () => {
     setTitle("");
     setValue("");
     setSearchParams({});
-    // navigate("/");
+  };
+
+  const handleAdminClick = () => {
+    const password = prompt("Enter admin password:");
+    if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
+      setIsAdmin(true);
+      navigate("/admin"); // Navigate to the admin page
+      toast.success("Admin access granted!");
+    } else {
+      toast.error("Incorrect password!");
+    }
   };
 
   useEffect(() => {
@@ -60,9 +69,17 @@ const Home = () => {
     }
   }, [pasteId, pastes]);
 
-
   return (
     <div className="w-full h-full py-10 max-w-[1200px] mx-auto px-5 lg:px-0">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Paste Application</h1>
+        <button
+          onClick={handleAdminClick}
+          className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer"
+        >
+          Admin
+        </button>
+      </div>
       <div className="flex flex-col gap-y-5 items-start">
         <div className="w-full flex flex-row gap-x-4 justify-between items-center">
           <input
@@ -70,24 +87,25 @@ const Home = () => {
             placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            // Dynamic width based on whether pasteId is present
             className={`${
               pasteId ? "w-[80%]" : "w-[85%]"
             } text-black border border-input rounded-md p-2`}
           />
           <button
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer"
+            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 cursor-pointer"
             onClick={createPaste}
           >
             {pasteId ? "Update Paste" : "Create My Paste"}
           </button>
 
-        {pasteId &&  <button
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer"
-            onClick={resetPaste}
-          >
-            <PlusCircle size={20} />
-          </button>}
+          {pasteId && (
+            <button
+              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
+              onClick={resetPaste}
+            >
+              <PlusCircle size={20} />
+            </button>
+          )}
         </div>
 
         <div
@@ -98,20 +116,12 @@ const Home = () => {
           >
             <div className="w-full flex gap-x-[6px] items-center select-none group">
               <div className="w-[13px] h-[13px] rounded-full flex items-center justify-center p-[1px] overflow-hidden bg-[rgb(255,95,87)]" />
-
-              <div
-                className={`w-[13px] h-[13px] rounded-full flex items-center justify-center p-[1px] overflow-hidden bg-[rgb(254,188,46)]`}
-              />
-
+              <div className={`w-[13px] h-[13px] rounded-full flex items-center justify-center p-[1px] overflow-hidden bg-[rgb(254,188,46)]`} />
               <div className="w-[13px] h-[13px] rounded-full flex items-center justify-center p-[1px] overflow-hidden bg-[rgb(45,200,66)]" />
             </div>
-            {/* Circle and copy btn */}
-            <div
-              className={`w-fit rounded-t flex items-center justify-between gap-x-4 px-4`}
-            >
-              {/*Copy  button */}
+            <div className={`w-fit rounded-t flex items-center justify-between gap-x-4 px-4`}>
               <button
-                className={`flex justify-center items-center  transition-all duration-300 ease-in-out group`}
+                className={`flex justify-center items-center transition-all duration-300 ease-in-out group`}
                 onClick={() => {
                   navigator.clipboard.writeText(value);
                   toast.success("Copied to Clipboard", {
@@ -124,18 +134,21 @@ const Home = () => {
             </div>
           </div>
 
-          {/* TextArea */}
           <textarea
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Write Your Content Here...."
-            className="w-full p-3  focus-visible:ring-0"
+            className="w-full p-3 focus-visible:ring-0"
             style={{
               caretColor: "#000",
             }}
             rows={20}
           />
+          
         </div>
+            {/* Show Feedback component at the bottom */}
+            <Feedback isAdmin={isAdmin} />
+       
       </div>
     </div>
   );

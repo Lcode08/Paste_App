@@ -5,6 +5,7 @@ import Navbar from './components/Navbar'
 import Home from './components/Home'
 import Paste from './components/paste'
 import ViewPaste from './components/ViewPaste'
+import AdminPage from './components/Admin'
 
 const router = createBrowserRouter(
   [
@@ -14,6 +15,13 @@ const router = createBrowserRouter(
       <div>
         <Navbar/>
         <Home/>
+      </div>
+    },
+    {
+      path:"/admin",
+      element:
+      <div>
+        <AdminPage/>
       </div>
     },
     {
