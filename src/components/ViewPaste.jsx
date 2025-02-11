@@ -1,15 +1,12 @@
 import { Copy } from "lucide-react";
 import toast from "react-hot-toast";
-import { useSelector } from "react-redux";
+import { useSelector } from 'react-redux';
 import { useParams } from "react-router-dom";
 
 const ViewPaste = () => {
   const { id } = useParams();
-
   console.log(id)
-
   const pastes = useSelector((state) => state.paste.pastes);
-
   // Filter pastes based on search term (by title or content)
   const paste = pastes.filter((paste) => paste._id === id)[0];
 

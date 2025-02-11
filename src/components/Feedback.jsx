@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { ThumbsUp, ThumbsDown, Send } from "lucide-react"; // Import icons
+import { ThumbsUp, ThumbsDown, Send } from "lucide-react";
 import toast from "react-hot-toast";
+import { getFeedback, clearFeedback, addFeedback } from "../utils/firestore";
 
 const Feedback = ({ isAdmin }) => {
   const [likes, setLikes] = useState(0);
@@ -9,34 +10,36 @@ const Feedback = ({ isAdmin }) => {
   const [commentsList, setCommentsList] = useState([]);
 
   useEffect(() => {
-    // Load existing feedback from local storage
-    const storedLikes = localStorage.getItem("likes");
-    const storedDislikes = localStorage.getItem("dislikes");
-    const storedComments = JSON.parse(localStorage.getItem("comments")) || [];
+    const fetchFeedback = async () => {
+      const likesData = await getFeedback("likes");
+      const dislikesData = await getFeedback("dislikes");
+      const commentsData = await getFeedback("comments");
 
-    if (storedLikes) setLikes(Number(storedLikes));
-    if (storedDislikes) setDislikes(Number(storedDislikes));
-    setCommentsList(storedComments);
+      setLikes(likesData.length);
+      setDislikes(dislikesData.length);
+      setCommentsList(commentsData.map(c => c.text));
+    };
+
+    fetchFeedback();
   }, []);
 
-  const handleLike = () => {
+  const handleLike = async () => {
+    await addFeedback("likes", { timestamp: new Date() });
     setLikes(likes + 1);
-    localStorage.setItem("likes", likes + 1);
     toast.success("Liked successfully!");
   };
 
-  const handleDislike = () => {
+  const handleDislike = async () => {
+    await addFeedback("dislikes", { timestamp: new Date() });
     setDislikes(dislikes + 1);
-    localStorage.setItem("dislikes", dislikes + 1);
     toast.success("Disliked successfully!");
   };
 
-  const handleCommentSubmit = () => {
+  const handleCommentSubmit = async () => {
     if (comment.trim()) {
-      const updatedComments = [...commentsList, comment];
-      setCommentsList(updatedComments);
-      localStorage.setItem("comments", JSON.stringify(updatedComments));
-      setComment(""); // Clear the comment input
+      await addFeedback("comments", { text: comment, timestamp: new Date() });
+      setCommentsList([...commentsList, comment]);
+      setComment("");
       toast.success("Your message has been sent!");
     } else {
       toast.error("Please enter a comment.");
@@ -47,9 +50,9 @@ const Feedback = ({ isAdmin }) => {
     <div className="bg-gray-800 p-4 rounded-lg mt-8 width-full mx-auto">
       <div className="flex justify-between items-center gap-3">
         <div className="flex gap-4">
-            <button onClick={handleLike} className="flex items-center cursor-pointer hover:text-green-500">
-                <ThumbsUp size={40} className="transition-colors duration-200" />
-            </button>
+          <button onClick={handleLike} className="flex items-center cursor-pointer hover:text-green-500">
+            <ThumbsUp size={40} className="transition-colors duration-200" />
+          </button>
           <button onClick={handleDislike} className="flex items-center cursor-pointer hover:text-red-500">
             <ThumbsDown size={40} className="transition-colors duration-200" />
           </button>

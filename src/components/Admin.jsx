@@ -1,16 +1,30 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { getFeedback , clearFeedback } from "../utils/firestore";
 
 const AdminPage = () => {
-  const likes = Number(localStorage.getItem("likes")) || 0;
-  const dislikes = Number(localStorage.getItem("dislikes")) || 0;
-  const commentsList = JSON.parse(localStorage.getItem("comments")) || [];
+  const [likes, setLikes] = useState(0);
+  const [dislikes, setDislikes] = useState(0);
+  const [commentsList, setCommentsList] = useState([]);
 
-  const handleClearFeedback = () => {
-    localStorage.removeItem("likes");
-    localStorage.removeItem("dislikes");
-    localStorage.removeItem("comments");
-    window.location.reload(); // Reload the page to reflect changes
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      const likesData = await getFeedback("likes");
+      const dislikesData = await getFeedback("dislikes");
+      const commentsData = await getFeedback("comments");
+
+      setLikes(likesData.length);
+      setDislikes(dislikesData.length);
+      setCommentsList(commentsData.map(c => c.text));
+    };
+
+    fetchFeedback();
+  }, []);
+
+  const handleClearFeedback = async () => {
+    await clearFeedback("likes");
+    await clearFeedback("dislikes");
+    await clearFeedback("comments");
+    window.location.reload();
   };
 
   return (
