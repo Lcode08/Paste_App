@@ -6,14 +6,18 @@ import { useParams } from "react-router-dom";
 const ViewPaste = () => {
   const { id } = useParams();
 
-  console.log(id)
+  console.log("ID from params:", id);
 
   const pastes = useSelector((state) => state.paste.pastes);
+  console.log("Pastes from state:", pastes);
 
-  // Filter pastes based on search term (by title or content)
-  const paste = pastes.filter((paste) => paste._id === id)[0];
+  const paste = pastes.find((paste) => paste._id === id);
+  console.log("Selected Paste:", paste);
 
-  console.log("Paste->",paste);
+  if (!paste) {
+    return <div>Loading or Paste not found...</div>;
+  }
+
   return (
     <div className="w-full h-full py-10 max-w-[1200px] mx-auto px-5 lg:px-0">
       <div className="flex flex-col gap-y-5 items-start">
