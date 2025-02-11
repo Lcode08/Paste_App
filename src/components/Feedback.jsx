@@ -65,7 +65,7 @@ const Feedback = ({ isAdmin }) => {
             onChange={(e) => setComment(e.target.value)}
             className="p-2 rounded-md bg-gray-700 text-white w-full"
           />
-          <button onClick={handleCommentSubmit} className="ml-2 cursor-pointer hover:text-blue-800">
+          <button onClick={handleCommentSubmit} className="ml-2 cursor-pointer hover:text-green-800">
             <Send size={40} className="transition-colors duration-200" />
           </button>
         </div>
