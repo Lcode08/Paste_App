@@ -66,7 +66,7 @@ const Feedback = ({ isAdmin }) => {
             className="p-2 rounded-md bg-gray-700 text-white w-full"
           />
           <button onClick={handleCommentSubmit} className="ml-2 cursor-pointer hover:text-blue-800">
-            <Send size={40} className="text-white transition-colors duration-200" />
+            <Send size={40} className="transition-colors duration-200" />
           </button>
         </div>
       </div>
