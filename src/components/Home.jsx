@@ -3,17 +3,16 @@ import { Copy, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { addToPastes, updateToPastes } from "../redux/pasteSlice";
+import { createNewPaste } from "../redux/pasteSlice";
 import { useSearchParams, useNavigate } from "react-router-dom"; // Import useNavigate
 import Feedback from "./Feedback";
 
 const Home = () => {
   const [value, setValue] = useState("");
   const [title, setTitle] = useState("");
+  const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const pasteId = searchParams.get("pasteId");
-  const pastes = useSelector((state) => state.paste.pastes);
-  const dispatch = useDispatch();
   const navigate = useNavigate(); // Hook for navigation
   const [isAdmin, setIsAdmin] = useState(false); // State to track admin access
 
@@ -31,12 +30,7 @@ const Home = () => {
       createdAt: new Date().toISOString(),
     };
 
-    if (pasteId) {
-      dispatch(updateToPastes(paste));
-    } else {
-      dispatch(addToPastes(paste));
-    }
-
+    dispatch(createNewPaste(paste));
     setTitle("");
     setValue("");
     setSearchParams({});
@@ -58,16 +52,6 @@ const Home = () => {
       toast.error("Incorrect password!");
     }
   };
-
-  useEffect(() => {
-    if (pasteId) {
-      const paste = pastes.find((p) => p._id === pasteId);
-      if (paste) {
-        setTitle(paste.title);
-        setValue(paste.content);
-      }
-    }
-  }, [pasteId, pastes]);
 
   return (
     <div className="w-full h-full py-10 max-w-[1200px] mx-auto px-5 lg:px-0">
@@ -95,17 +79,8 @@ const Home = () => {
             className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 cursor-pointer"
             onClick={createPaste}
           >
-            {pasteId ? "Update Paste" : "Create My Paste"}
+            Create My Paste
           </button>
-
-          {pasteId && (
-            <button
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
-              onClick={resetPaste}
-            >
-              <PlusCircle size={20} />
-            </button>
-          )}
         </div>
 
         <div
@@ -121,7 +96,7 @@ const Home = () => {
             </div>
             <div className={`w-fit rounded-t flex items-center justify-between gap-x-4 px-4`}>
               <button
-                className={`flex justify-center items-center transition-all duration-300 ease-in-out group`}
+                className={`flex justify-center items-center transition-all duration-300 ease-in-out group cursor-pointer`}
                 onClick={() => {
                   navigator.clipboard.writeText(value);
                   toast.success("Copied to Clipboard", {
