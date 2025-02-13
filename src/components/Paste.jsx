@@ -137,7 +137,7 @@ const Paste = () => {
               ))
             ) : (
               <div className="text-2xl text-center w-full text-chileanFire-500">
-                No Data Found
+                Loading....
               </div>
             )}
           </div>
