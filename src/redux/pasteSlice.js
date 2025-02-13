@@ -62,6 +62,7 @@ export const deletePaste = (pasteId) => async (dispatch) => {
   const docRef = doc(db, "pastes", pasteId);
   await deleteDoc(docRef);
   dispatch(removeFromPastes(pasteId));
+  dispatch(fetchPastes());
 };
 
 export default pasteSlice.reducer;
