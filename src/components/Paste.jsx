@@ -1,20 +1,25 @@
 import { Calendar, Copy, Eye, PencilLine, Trash2, Share } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react"; // Import useState
-import { removeFromPastes } from "../redux/pasteSlice";
+import { useState, useEffect } from "react";
+import { fetchPastes, removeFromPastes } from "../redux/pasteSlice";
 import { FormatDate } from "../utils/formatDate";
+import { useNavigate } from "react-router-dom";
 
 const Paste = () => {
   const pastes = useSelector((state) => state.paste.pastes);
   const dispatch = useDispatch();
-  const [searchTerm, setSearchTerm] = useState(""); // State to hold the search term
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const handleDelete = (id) => {
-    dispatch(removeFromPastes(id));
+  useEffect(() => {
+    dispatch(fetchPastes()); // Fetch pastes from Firestore on component mount
+  }, [dispatch]);
+
+  const handleDelete = async (id) => {
+    await dispatch(removeFromPastes(id));
   };
 
-  // Filter pastes based on search term (by title or content)
   const filteredPastes = pastes.filter((paste) =>
     paste.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -24,13 +29,12 @@ const Paste = () => {
       console.error("Paste object is undefined");
       return;
     }
-    console.log(paste); // Ensure this logs the correct paste object
     const shareData = {
       title: paste.title,
       text: paste.content,
-      url: window.location.href + `?pasteId=${paste._id}`,
+      url: `${window.location.origin}/pastes/${paste._id}`,
     };
-  
+
     if (navigator.share) {
       navigator.share(shareData)
         .then(() => toast.success("Paste shared successfully!"))
@@ -44,18 +48,16 @@ const Paste = () => {
   return (
     <div className="w-full h-full py-10 max-w-[1200px] mx-auto px-5 lg:px-0">
       <div className="flex flex-col gap-y-3">
-        {/* Search */}
-        <div className="w-full flex gap-3 px-4 py-2  rounded-[0.3rem] border border-[rgba(128,121,121,0.3)]  mt-6">
+        <div className="w-full flex gap-3 px-4 py-2 rounded-[0.3rem] border border-[rgba(128,121,121,0.3)] mt-6">
           <input
             type="search"
             placeholder="Search paste here..."
             className="focus:outline-none w-full bg-transparent"
-            value={searchTerm} // Bind the input to searchTerm state
-            onChange={(e) => setSearchTerm(e.target.value)} // Update searchTerm on input change
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        {/* All Pastes */}
         <div className="flex flex-col border border-[rgba(128,121,121,0.3)] py-4 rounded-[0.4rem]">
           <h2 className="px-4 text-4xl font-bold border-b border-[rgba(128,121,121,0.3)] pb-4">
             All Pastes
@@ -67,7 +69,6 @@ const Paste = () => {
                   key={paste?._id}
                   className="border border-[rgba(128,121,121,0.3)] w-full gap-y-6 justify-between flex flex-col sm:flex-row p-4 rounded-[0.3rem]"
                 >
-                  {/* heading and Description */}
                   <div className="w-[50%] flex flex-col space-y-3">
                     <p className="text-4xl font-semibold ">{paste?.title}</p>
                     <p className="text-sm font-normal line-clamp-3 max-w-[80%] text-[#707070]">
@@ -75,22 +76,19 @@ const Paste = () => {
                     </p>
                   </div>
 
-                  {/* icons */}
                   <div className="flex flex-col gap-y-4 sm:items-end">
                     <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                    <button
+                      className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7] hover:bg-transparent group hover:border-blue-500 cursor-pointer"
+                      onClick={() => navigate(`/update/${paste?._id}`)}
+                    >
+                      <PencilLine
+                        className="text-black group-hover:text-blue-500"
+                        size={20}
+                      />
+                    </button>
                       <button
-                        className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7]  hover:bg-transparent group hover:border-blue-500"
-                        // onClick={() => toast.error("Not working")}
-                      >
-                        <a href={`/?pasteId=${paste?._id}`}>
-                          <PencilLine
-                            className="text-black group-hover:text-blue-500"
-                            size={20}
-                          />
-                        </a>
-                      </button>
-                      <button
-                        className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7]  hover:bg-transparent group hover:border-pink-500 cursor-pointer"
+                        className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7] hover:bg-transparent group hover:border-pink-500 cursor-pointer"
                         onClick={() => handleDelete(paste?._id)}
                       >
                         <Trash2
@@ -99,7 +97,7 @@ const Paste = () => {
                         />
                       </button>
 
-                      <button className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7]  hover:bg-transparent group hover:border-orange-500">
+                      <button className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7] hover:bg-transparent group hover:border-orange-500">
                         <a href={`/pastes/${paste?._id}`} target="_blank">
                           <Eye
                             className="text-black group-hover:text-orange-500"
@@ -107,16 +105,17 @@ const Paste = () => {
                           />
                         </a>
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleShare(paste)}
-                        className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7]  hover:bg-transparent group hover:border-blue-500 cursor-pointer"> 
+                        className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7] hover:bg-transparent group hover:border-blue-500 cursor-pointer"
+                      >
                         <Share
-                            className="text-black group-hover:text-blue-500"
-                            size={20}
+                          className="text-black group-hover:text-blue-500"
+                          size={20}
                         />
                       </button>
                       <button
-                        className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7]  hover:bg-transparent group hover:border-green-500"
+                        className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7] hover:bg-transparent group hover:border-green-500"
                         onClick={() => {
                           navigator.clipboard.writeText(paste?.content);
                           toast.success("Copied to Clipboard");
@@ -127,7 +126,6 @@ const Paste = () => {
                           size={20}
                         />
                       </button>
-
                     </div>
 
                     <div className="gap-x-2 flex ">
