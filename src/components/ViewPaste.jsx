@@ -1,17 +1,43 @@
 import { Copy } from "lucide-react";
 import toast from "react-hot-toast";
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 import { useParams } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 const ViewPaste = () => {
   const { id } = useParams();
-  console.log(id)
-  const pastes = useSelector((state) => state.paste.pastes);
-  // Filter pastes based on search term (by title or content)
-  const paste = pastes.filter((paste) => paste._id === id)[0];
+  const [paste, setPaste] = useState(null);
 
+  useEffect(() => {
+    const fetchPaste = async () => {
+      try {
+        const docRef = doc(db, "pastes", id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setPaste(docSnap.data());
+        } else {
+          console.log("No such document!");
+          toast.error("No Data found");
+          return <div>No Data found</div>
+        }
+      } catch (error) {
+        console.error("Error fetching paste:", error);
+        toast.error("Error fetching paste.");
+      }
+    };
+
+    fetchPaste();
+  }, [id]);
+
+if (!paste) {
+    return <div>Loading...</div>;
+}
+else {
   return (
     <div className="w-full h-full py-10 max-w-[1200px] mx-auto px-5 lg:px-0">
+    
       <div className="flex flex-col gap-y-5 items-start">
         <input
           type="text"
@@ -28,20 +54,16 @@ const ViewPaste = () => {
           >
             <div className="w-full flex gap-x-[6px] items-center select-none group">
               <div className="w-[13px] h-[13px] rounded-full flex items-center justify-center p-[1px] overflow-hidden bg-[rgb(255,95,87)]" />
-
               <div
                 className={`w-[13px] h-[13px] rounded-full flex items-center justify-center p-[1px] overflow-hidden bg-[rgb(254,188,46)]`}
               />
-
               <div className="w-[13px] h-[13px] rounded-full flex items-center justify-center p-[1px] overflow-hidden bg-[rgb(45,200,66)]" />
             </div>
-            {/* Circle and copy btn */}
             <div
               className={`w-fit rounded-t flex items-center justify-between gap-x-4 px-4`}
             >
-              {/*Copy  button */}
               <button
-                className={`flex justify-center items-center  transition-all duration-300 ease-in-out group cursor-pointer`}
+                className={`flex justify-center items-center transition-all duration-300 ease-in-out group cursor-pointer`}
                 onClick={() => {
                   navigator.clipboard.writeText(paste.content);
                   toast.success("Copied to Clipboard");
@@ -52,12 +74,11 @@ const ViewPaste = () => {
             </div>
           </div>
 
-          {/* TextArea */}
           <textarea
             value={paste.content}
             disabled
             placeholder="Write Your Content Here...."
-            className="w-full p-3  focus-visible:ring-0"
+            className="w-full p-3 focus-visible:ring-0"
             style={{
               caretColor: "#000",
             }}
@@ -67,6 +88,8 @@ const ViewPaste = () => {
       </div>
     </div>
   );
+}
+  
 };
 
 export default ViewPaste;
