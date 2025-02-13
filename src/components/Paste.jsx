@@ -20,18 +20,22 @@ const Paste = () => {
   );
 
   const handleShare = (paste) => {
+    if (!paste) {
+      console.error("Paste object is undefined");
+      return;
+    }
+    console.log(paste); // Ensure this logs the correct paste object
     const shareData = {
       title: paste.title,
       text: paste.content,
-      url: window.location.href + `?pasteId=${paste._id}`, // Create a shareable link
+      url: window.location.href + `?pasteId=${paste._id}`,
     };
-
+  
     if (navigator.share) {
       navigator.share(shareData)
         .then(() => toast.success("Paste shared successfully!"))
         .catch((error) => toast.error("Error sharing the paste."));
     } else {
-      // Fallback for browsers that do not support the Web Share API
       toast.info("Copy the link to share: " + shareData.url);
       navigator.clipboard.writeText(shareData.url);
     }
@@ -103,7 +107,8 @@ const Paste = () => {
                           />
                         </a>
                       </button>
-                      <button onClick={handleShare}
+                      <button 
+                        onClick={() => handleShare(paste)}
                         className="p-2 rounded-[0.2rem] bg-white border border-[#c7c7c7]  hover:bg-transparent group hover:border-blue-500 cursor-pointer"> 
                         <Share
                             className="text-black group-hover:text-blue-500"
