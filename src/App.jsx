@@ -6,6 +6,7 @@ import Home from './components/Home'
 import Paste from './components/Paste'
 import ViewPaste from './components/ViewPaste'
 import AdminPage from './components/Admin'
+import UpdatePaste from './components/Edit'
 
 const router = createBrowserRouter(
   [
@@ -39,7 +40,16 @@ const router = createBrowserRouter(
         <Navbar/>
         <ViewPaste/>
       </div>
-    }
+    },
+    {
+      path: "/update/:id",
+      element: (
+        <div>
+          <Navbar />
+          <UpdatePaste />
+        </div>
+      ),
+    },
   ]
 )
 function App() {
