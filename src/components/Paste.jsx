@@ -2,7 +2,7 @@ import { Calendar, Copy, Eye, PencilLine, Trash2, Share } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSelector, useDispatch } from "react-redux";
 import { useState, useEffect } from "react";
-import { fetchPastes, removeFromPastes } from "../redux/pasteSlice";
+import { fetchPastes, deletePaste } from "../redux/pasteSlice";
 import { FormatDate } from "../utils/formatDate";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +17,7 @@ const Paste = () => {
   }, [dispatch]);
 
   const handleDelete = async (id) => {
-    await dispatch(removeFromPastes(id));
+    await dispatch(deletePaste(id));
   };
 
   const filteredPastes = pastes.filter((paste) =>
